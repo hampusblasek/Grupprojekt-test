@@ -25,18 +25,18 @@ public class ProductTests : IClassFixture<ApplicationFactory<Grupprojekt.Program
         // It will use the fake user created in the "factory" file for authentication.
         // When
         var response = await client.PostAsJsonAsync<Grupprojekt.ProductCreateDto>("product/new", dto);
-        // Hämta ut svaret från anroppet i JSON.
+        // Retrieve the response from the request in JSON.
         var result = await response.Content.ReadFromJsonAsync<Grupprojekt.ProductResponseDto>();
 
         // Make sure the response is correct.
         // Then
         response.EnsureSuccessStatusCode();
-        Assert.NotNull(result);
-        Assert.NotEqual(Guid.Empty, result.Id);
-        Assert.Equal("Coca Cola", result.Title);
-        Assert.Equal("A tasty drink", result.Description);
-        Assert.Equal(30, result.Price);
-        Assert.True(result.InStock);
+        Assert.NotNull(result); // Ensure a product is returned
+        Assert.NotEqual(Guid.Empty, result.Id); // Ensure a product has an id
+        Assert.Equal("Coca Cola", result.Title); // Ensure a product has the correct title
+        Assert.Equal("A tasty drink", result.Description); // Ensure a product has the correct description
+        Assert.Equal(30, result.Price); // Ensure a product has the correct price
+        Assert.True(result.InStock); // Ensure a product is in stock when created
     }
 
     [Fact]
@@ -47,16 +47,45 @@ public class ProductTests : IClassFixture<ApplicationFactory<Grupprojekt.Program
         var client = factory.CreateClient();
         var dto = new Grupprojekt.ProductCreateDto("", "A tasty drink", 30);
 
-        // Call an endpoint with some data.
+        // Call an endpoint with new product.
         // It will use the fake user created in the "factory" file for authentication.
         // When
         var response = await client.PostAsJsonAsync<Grupprojekt.ProductCreateDto>("product/new", dto);
-        // Hämta ut svaret från anroppet i JSON.
-        var result = await response.Content.ReadFromJsonAsync<Grupprojekt.ProductResponseDto>();
 
-        // Make sure the response is correct.
+
+        // Retrieve the response from the request in JSON.
+        var result = await response.Content.ReadFromJsonAsync<Grupprojekt.ProductResponseDto>();
 
         // Then
         Assert.Equal(System.Net.HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task SearchForProduct() // Test bad request - so the operation doesn´t succeed when it´s suppose to fail.
+    {
+        // Create a client that can be used to call the API (just like a real HTTP client).
+        // Given
+        var client = factory.CreateClient();
+        // Create a product
+        var product = new Grupprojekt.ProductCreateDto("Coca Cola", "A tasty drink", 30);
+
+        // Call an endpoint with new product.
+        var response = await client.PostAsJsonAsync<Grupprojekt.ProductCreateDto>("product/new", product);
+        response.EnsureSuccessStatusCode();  // Ensure the product was created
+
+        // Call an endpoint with search-word.
+        var searchResponse = await client.GetAsync($"product/search/{product.Title}");
+        searchResponse.EnsureSuccessStatusCode();
+
+        // When
+        // Retrieve the response from the request in JSON.
+        var searchResult = await searchResponse.Content.ReadFromJsonAsync<Grupprojekt.ProductResponseDto>();
+
+        // Then
+        response.EnsureSuccessStatusCode();
+        Assert.NotNull(searchResult);  // Ensure a product is returned
+        Assert.Equal("Coca Cola", searchResult.Title);  // Ensure the product title matches
+        Assert.Equal("A tasty drink", searchResult.Description);  // Ensure the description matches
+        Assert.Equal(30, searchResult.Price);  // Ensure the price matches
     }
 }
