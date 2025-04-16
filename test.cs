@@ -61,7 +61,7 @@ public class ProductTests : IClassFixture<ApplicationFactory<Grupprojekt.Program
     }
 
     [Fact]
-    public async Task SearchForProduct() // Test bad request - so the operation doesn´t succeed when it´s suppose to fail.
+    public async Task SearchForProduct() // Test if search for a product works
     {
         // Create a client that can be used to call the API (just like a real HTTP client).
         // Given
