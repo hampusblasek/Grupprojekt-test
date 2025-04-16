@@ -16,7 +16,6 @@ public class ProductTests : IClassFixture<ApplicationFactory<Grupprojekt.Program
     [Fact]
     public async Task AddProduct()
     {
-
         // Create a client that can be used to call the API (just like a real HTTP client).
         // Given
         var client = factory.CreateClient();
@@ -38,5 +37,26 @@ public class ProductTests : IClassFixture<ApplicationFactory<Grupprojekt.Program
         Assert.Equal("A tasty drink", result.Description);
         Assert.Equal(30, result.Price);
         Assert.True(result.InStock);
+    }
+
+    [Fact]
+    public async Task AddProductBadRequest() // Test bad request - so the operation doesn´t succeed when it´s suppose to fail.
+    {
+        // Create a client that can be used to call the API (just like a real HTTP client).
+        // Given
+        var client = factory.CreateClient();
+        var dto = new Grupprojekt.ProductCreateDto("", "A tasty drink", 30);
+
+        // Call an endpoint with some data.
+        // It will use the fake user created in the "factory" file for authentication.
+        // When
+        var response = await client.PostAsJsonAsync<Grupprojekt.ProductCreateDto>("product/new", dto);
+        // Hämta ut svaret från anroppet i JSON.
+        var result = await response.Content.ReadFromJsonAsync<Grupprojekt.ProductResponseDto>();
+
+        // Make sure the response is correct.
+
+        // Then
+        Assert.Equal(System.Net.HttpStatusCode.BadRequest, response.StatusCode);
     }
 }
